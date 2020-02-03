@@ -3,7 +3,6 @@ package org.kimbs.jwt.model;
 import lombok.Data;
 import org.springframework.data.mongodb.core.index.IndexDirection;
 import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
@@ -25,6 +24,6 @@ public class User {
 
     private boolean enabled;
 
-    @DBRef
+//    @DBRef(lazy = true)
     private Set<Role> roles;
 }

@@ -9,39 +9,31 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Base64;
 import java.util.Date;
 import java.util.Set;
 
 @Component
 public class JwtTokenProvider {
 
-    private static final long JWT_TOKEN_VALIDITY = 1000 * 60 * 60;
-
-    private String secret = "kimbs";
+    @Autowired
+    private JwtProperties jwtProperties;
 
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
-
-    @PostConstruct
-    protected void init () {
-        secret = Base64.getEncoder().encodeToString(secret.getBytes());
-    }
 
     public String createToken(String username, Set<Role> roles) {
         Claims claims = Jwts.claims().setSubject(username);
         claims.put("role", roles);
 
         Date now = new Date();
-        Date validity = new Date(now.getTime() + JWT_TOKEN_VALIDITY);
+        Date validity = new Date(now.getTime() + jwtProperties.getTokenValidity());
 
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(validity)
-                .signWith(SignatureAlgorithm.HS256, secret)
+                .signWith(SignatureAlgorithm.HS256, jwtProperties.getSecretKey())
                 .compact();
     }
 
@@ -51,7 +43,7 @@ public class JwtTokenProvider {
     }
 
     public String getUsername(String token) {
-        return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parser().setSigningKey(jwtProperties.getSecretKey()).parseClaimsJws(token).getBody().getSubject();
     }
 
     public String resolveToken(HttpServletRequest httpServletRequest) {
@@ -64,7 +56,7 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
-            Jws<Claims> claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
+            Jws<Claims> claims = Jwts.parser().setSigningKey(jwtProperties.getSecretKey()).parseClaimsJws(token);
             if (claims.getBody().getExpiration().before(new Date())) {
                 return false;
             }

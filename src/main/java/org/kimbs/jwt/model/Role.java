@@ -13,6 +13,6 @@ public class Role {
     @MongoId
     private String id;
 
-    @Indexed(unique = true, direction = IndexDirection.DESCENDING)
+    @Indexed(unique = false, direction = IndexDirection.DESCENDING)
     private String role;
 }
