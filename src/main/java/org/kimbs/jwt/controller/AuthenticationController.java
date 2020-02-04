@@ -11,8 +11,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -30,13 +34,18 @@ public class AuthenticationController {
     public ResponseEntity<?> login(@RequestBody AuthenticationBody data) {
         try {
             String username = data.getEmail();
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, data.getPassword()));
+            Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, data.getPassword()));
             String token = jwtTokenProvider.createToken(username, this.customUserDetailsService.findUserByEmail(username).getRoles());
 
             HttpHeaders headers = new HttpHeaders();
-            headers.add("token", token);
+            headers.set("token", token);
 
-            return new ResponseEntity<>(username, headers, HttpStatus.OK);
+            Map<Object, Object> model = new HashMap<>();
+            model.put("username", username);
+            model.put("token", token);
+            model.put("auth", auth);
+
+            return new ResponseEntity<>(model, headers, HttpStatus.OK);
         } catch (AuthenticationException e) {
             throw new BadCredentialsException("Invalid email/password supplied");
         }

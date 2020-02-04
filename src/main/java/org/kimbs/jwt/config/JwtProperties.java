@@ -15,6 +15,12 @@ public class JwtProperties {
 
     private String secretKey;
 
+    private long refreshTokenExpirationValidity;
+
+    private String accessTokenCookieName;
+
+    private String refreshTokenCookieName;
+
     public void setSecretKey(String secretKey) {
         this.secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }

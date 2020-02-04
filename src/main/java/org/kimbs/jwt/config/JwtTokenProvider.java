@@ -26,6 +26,9 @@ public class JwtTokenProvider {
         Claims claims = Jwts.claims().setSubject(username);
         claims.put("role", roles);
 
+        // 여기다 커스텀 필드 넣을 수 있는 거 같음.
+        claims.put("TEST", "TEST");
+
         Date now = new Date();
         Date validity = new Date(now.getTime() + jwtProperties.getTokenValidity());
 
@@ -33,7 +36,7 @@ public class JwtTokenProvider {
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(validity)
-                .signWith(SignatureAlgorithm.HS256, jwtProperties.getSecretKey())
+                .signWith(SignatureAlgorithm.HS512, jwtProperties.getSecretKey())
                 .compact();
     }
 

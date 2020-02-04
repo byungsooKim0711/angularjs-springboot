@@ -1,12 +1,12 @@
 package org.kimbs.jwt.config;
 
+import org.kimbs.jwt.model.code.RoleCode;
 import org.kimbs.jwt.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,8 +20,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import javax.servlet.http.HttpServletResponse;
 
 @Configuration
-@EnableWebSecurity(debug = true)
-//@EnableGlobalMethodSecurity(securedEnabled = true)
+@EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -41,7 +40,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
                 .antMatchers("/api/auth/login").permitAll().antMatchers("/api/auth/register").permitAll()
-                .antMatchers("/api/product/**").hasAuthority("ADMIN").anyRequest().authenticated().and().csrf()
+                .antMatchers("/api/product/**").hasAuthority(RoleCode.ROLE_ADMIN.getCode()).anyRequest().authenticated().and().csrf()
                 .disable().exceptionHandling().authenticationEntryPoint(unauthorizedEntryPoint()).and()
                 .apply(new JwtConfig(jwtTokenProvider));
         http.cors();

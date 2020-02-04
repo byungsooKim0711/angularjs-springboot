@@ -15,3 +15,6 @@ logging:
 jwt:
   token-validity: 60000
   secret-key: kimbs
+  refresh-token-expiration-validity: 60000
+  access-token-cookie-name: accessToken
+  refresh-token-cookie-name: refreshToken
