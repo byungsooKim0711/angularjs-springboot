@@ -13,7 +13,9 @@ public class JwtProperties {
 
     private long tokenValidity;
 
-    private String secretKey;
+    private String accessTokenKey;
+
+    private String refreshTokenKey;
 
     private long refreshTokenExpirationValidity;
 
@@ -21,7 +23,11 @@ public class JwtProperties {
 
     private String refreshTokenCookieName;
 
-    public void setSecretKey(String secretKey) {
-        this.secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
+    public void setAccessTokenKey(String accessTokenKey) {
+        this.accessTokenKey = Base64.getEncoder().encodeToString(accessTokenKey.getBytes());
+    }
+
+    public void setRefreshTokenKey(String refreshTokenKey) {
+        this.refreshTokenKey = Base64.getEncoder().encodeToString(refreshTokenKey.getBytes());
     }
 }

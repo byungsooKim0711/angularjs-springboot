@@ -2,6 +2,7 @@ package org.kimbs.jwt.config;
 
 import io.jsonwebtoken.*;
 import org.kimbs.jwt.model.Role;
+import org.kimbs.jwt.model.TokenSet;
 import org.kimbs.jwt.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,7 +23,7 @@ public class JwtTokenProvider {
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
-    public String createToken(String username, Set<Role> roles) {
+    public TokenSet createToken(String username, Set<Role> roles) {
         Claims claims = Jwts.claims().setSubject(username);
         claims.put("role", roles);
 
@@ -32,12 +33,23 @@ public class JwtTokenProvider {
         Date now = new Date();
         Date validity = new Date(now.getTime() + jwtProperties.getTokenValidity());
 
-        return Jwts.builder()
+        String accessToken = Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(validity)
-                .signWith(SignatureAlgorithm.HS512, jwtProperties.getSecretKey())
+                .signWith(SignatureAlgorithm.HS512, jwtProperties.getAccessTokenKey())
                 .compact();
+
+        String refreshToken = Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(validity)
+                .signWith(SignatureAlgorithm.HS512, jwtProperties.getRefreshTokenKey())
+                .compact();
+
+        return TokenSet.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken).build();
     }
 
     public Authentication getAuthentication(String token) {
@@ -46,7 +58,7 @@ public class JwtTokenProvider {
     }
 
     public String getUsername(String token) {
-        return Jwts.parser().setSigningKey(jwtProperties.getSecretKey()).parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parser().setSigningKey(jwtProperties.getAccessTokenKey()).parseClaimsJws(token).getBody().getSubject();
     }
 
     public String resolveToken(HttpServletRequest httpServletRequest) {
@@ -59,11 +71,13 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
-            Jws<Claims> claims = Jwts.parser().setSigningKey(jwtProperties.getSecretKey()).parseClaimsJws(token);
+            Jws<Claims> claims = Jwts.parser().setSigningKey(jwtProperties.getAccessTokenKey()).parseClaimsJws(token);
             if (claims.getBody().getExpiration().before(new Date())) {
                 return false;
             }
             return true;
+        } catch (ExpiredJwtException e) {
+            throw e;
         } catch (JwtException | IllegalArgumentException e) {
             throw new JwtException("Expired or invalid JWT token");
         }

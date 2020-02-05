@@ -3,6 +3,7 @@ package org.kimbs.jwt.controller;
 import lombok.RequiredArgsConstructor;
 import org.kimbs.jwt.config.JwtTokenProvider;
 import org.kimbs.jwt.model.AuthenticationBody;
+import org.kimbs.jwt.model.TokenSet;
 import org.kimbs.jwt.model.User;
 import org.kimbs.jwt.service.CustomUserDetailsService;
 import org.springframework.http.HttpHeaders;
@@ -14,9 +15,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.HashMap;
-import java.util.Map;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -31,28 +33,33 @@ public class AuthenticationController {
     private final CustomUserDetailsService customUserDetailsService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthenticationBody data) {
+    public ResponseEntity<?> login(@RequestBody AuthenticationBody data, HttpServletResponse response) {
         try {
             String username = data.getEmail();
             Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, data.getPassword()));
-            String token = jwtTokenProvider.createToken(username, this.customUserDetailsService.findUserByEmail(username).getRoles());
+            TokenSet token = jwtTokenProvider.createToken(username, this.customUserDetailsService.findUserByEmail(username).getRoles());
 
+            // set header
             HttpHeaders headers = new HttpHeaders();
-            headers.set("token", token);
+            headers.set("access-token", token.getAccessToken());
+            headers.set("refresh-token", token.getRefreshToken());
 
-            Map<Object, Object> model = new HashMap<>();
-            model.put("username", username);
-            model.put("token", token);
-            model.put("auth", auth);
+            // set cookie
+            Cookie cookie = new Cookie("token", token.getAccessToken());
+            cookie.setMaxAge(60);
+            cookie.setSecure(true);
+            cookie.setHttpOnly(true);
+            cookie.setPath("/");
+            response.addCookie(cookie);
 
-            return new ResponseEntity<>(model, headers, HttpStatus.OK);
+            return new ResponseEntity<>(auth.getPrincipal(), headers, HttpStatus.OK);
         } catch (AuthenticationException e) {
             throw new BadCredentialsException("Invalid email/password supplied");
         }
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
+    public ResponseEntity<?> register(@RequestBody User user, final UriComponentsBuilder uriComponentsBuilder) {
         User userExists = customUserDetailsService.findUserByEmail(user.getEmail());
 
         if (userExists != null) {
