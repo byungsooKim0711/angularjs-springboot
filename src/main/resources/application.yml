@@ -13,9 +13,10 @@ logging:
     org.springframework.data.mongodb.core.MongoTemplate: DEBUG
 
 jwt:
-  token-validity: 60000
+  access-token-validity: 60000
   access-token-key: kimbsAt
+  access-token-cookie-name: accessToken
+
   refresh-token-key: kimbsRt
   refresh-token-expiration-validity: 60000
-  access-token-cookie-name: accessToken
   refresh-token-cookie-name: refreshToken

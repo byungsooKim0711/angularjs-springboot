@@ -11,15 +11,15 @@ import java.util.Base64;
 @ConfigurationProperties(prefix = "jwt")
 public class JwtProperties {
 
-    private long tokenValidity;
+    private long accessTokenValidity;
+
+    private String accessTokenCookieName;
 
     private String accessTokenKey;
 
     private String refreshTokenKey;
 
     private long refreshTokenExpirationValidity;
-
-    private String accessTokenCookieName;
 
     private String refreshTokenCookieName;
 

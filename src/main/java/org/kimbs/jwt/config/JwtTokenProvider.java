@@ -31,19 +31,20 @@ public class JwtTokenProvider {
         claims.put("TEST", "TEST");
 
         Date now = new Date();
-        Date validity = new Date(now.getTime() + jwtProperties.getTokenValidity());
+        Date accessValidity = new Date(now.getTime() + jwtProperties.getAccessTokenValidity());
+        Date refreshValidity = new Date(now.getTime() + jwtProperties.getRefreshTokenExpirationValidity());
 
         String accessToken = Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
-                .setExpiration(validity)
+                .setExpiration(accessValidity)
                 .signWith(SignatureAlgorithm.HS512, jwtProperties.getAccessTokenKey())
                 .compact();
 
         String refreshToken = Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
-                .setExpiration(validity)
+                .setExpiration(refreshValidity)
                 .signWith(SignatureAlgorithm.HS512, jwtProperties.getRefreshTokenKey())
                 .compact();
 
