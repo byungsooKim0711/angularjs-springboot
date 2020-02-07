@@ -1,1 +1,1 @@
-# angularjs-springboot-jwt
+# springboot-jwt
