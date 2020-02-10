@@ -20,7 +20,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
-@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -45,12 +44,19 @@ public class AuthenticationController {
             headers.set("refresh-token", token.getRefreshToken());
 
             // set cookie
-            Cookie cookie = new Cookie("token", token.getAccessToken());
-            cookie.setMaxAge(60);
-            cookie.setSecure(true);
-            cookie.setHttpOnly(true);
-            cookie.setPath("/");
-            response.addCookie(cookie);
+            Cookie access = new Cookie("access-token", token.getAccessToken());
+            access.setMaxAge(60);
+//            access.setSecure(true);
+            access.setHttpOnly(true);
+            access.setPath("/");
+            response.addCookie(access);
+
+            Cookie refresh = new Cookie("refresh-token", token.getRefreshToken());
+            refresh.setMaxAge(60*60);
+//            refresh.setSecure(true);
+            refresh.setHttpOnly(true);
+            refresh.setPath("/");
+            response.addCookie(refresh);
 
             return new ResponseEntity<>(auth.getPrincipal(), headers, HttpStatus.OK);
         } catch (AuthenticationException e) {
